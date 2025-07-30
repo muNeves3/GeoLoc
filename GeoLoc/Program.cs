@@ -11,6 +11,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using GeoLoc.src.app.use_cases;
 using GeoLoc.src.infra.database.supabase;
 using GeoLoc.src.app.repositories;
+using GeoLoc.src.app.use_cases.centros;
 
 public class Program
 {
@@ -65,8 +66,23 @@ public class Program
             var client = new Supabase.Client(supabaseUrl, supabaseAnonKey, options);
             return client;
         });
-        builder.Services.AddScoped<IPerfilUsuarioRepository, perfil_usuario_repository>();
-        builder.Services.AddScoped<create_perfil_usuario>();
+
+        //builder.Services.AddScoped<IPerfilUsuarioRepository, perfil_usuario_repository>();
+        //builder.Services.AddScoped<create_perfil_usuario>();
+        //builder.Services.AddScoped<ICentroRepository, centro_repository>();
+        //builder.Services.AddScoped<create_centro>();
+        //builder.Services.AddScoped<get_all_centros>();
+
+        builder.Services.Scan(scan => scan
+            .FromAssemblyOf<Program>()
+
+            .AddClasses(classes => classes.InNamespaces("GeoLoc.src.infra.database.supabase"))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime()
+            .AddClasses(classes => classes.InNamespaces("GeoLoc.src.app.use_cases"))
+                .AsSelf()
+                .WithScopedLifetime()
+        );
 
         var app = builder.Build();
 
