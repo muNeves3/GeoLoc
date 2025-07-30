@@ -92,12 +92,12 @@ dotnet restore
 dotnet run
 ```
 
-📖 Documentação da API
+### 📖 Documentação da API
 A documentação completa dos endpoints da API está disponível via Swagger, conforme planejado nos requisitos não funcionais. Após iniciar o backend, acesse o seguinte endereço no seu navegador:
 
 http://localhost:8080/swagger
 
-🤝 Como Contribuir
+### 🤝 Como Contribuir
 Contribuições são o que tornam a comunidade de código aberto um lugar incrível para aprender, inspirar e criar. Qualquer contribuição que você fizer será muito apreciada.
 
 Faça um Fork do projeto

@@ -1,4 +1,5 @@
-﻿using GeoLoc.src.app.repositories;
+﻿using GeoLoc.src.app.models;
+using GeoLoc.src.app.repositories;
 
 namespace GeoLoc.src.app.use_cases.centros_edificios
 {
@@ -9,9 +10,9 @@ namespace GeoLoc.src.app.use_cases.centros_edificios
         {
             _centroEdificioRepository = centroEdificioRepository;
         }
-        public async Task<List<int>> Execute(int id_centro)
+        public async Task<List<Centro_Edificio>> Execute(string id_centro)
         {
-            if (id_centro <= 0)
+            if (id_centro == null)
             {
                 throw new ArgumentException("ID do centro deve ser maior que zero.");
             }
