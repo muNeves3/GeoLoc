@@ -90,6 +90,7 @@ dotnet restore
 
 # 5. Execute a aplicação
 dotnet run
+```
 
 📖 Documentação da API
 A documentação completa dos endpoints da API está disponível via Swagger, conforme planejado nos requisitos não funcionais. Após iniciar o backend, acesse o seguinte endereço no seu navegador:
