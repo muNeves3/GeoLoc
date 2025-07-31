@@ -4,12 +4,12 @@ name: .NET Backend CI/CD
 # e somente se houverem altera��es na pasta 'backend/' (ajuste o nome da pasta)
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     paths:
       - 'GeoLoc/**'  # <-- CORRETO! Aciona para qualquer mudança dentro da pasta GeoLoc.
       - '.github/workflows/dotnet.yml' # Opcional, mas bom: aciona se o próprio workflow for alterado.
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
     paths:
       - 'GeoLoc/**'  # <-- CORRETO! Aciona para qualquer mudança dentro da pasta GeoLoc.
       - '.github/workflows/dotnet.yml' # Opcional, mas bom: aciona se o próprio workflow for alterado.
@@ -27,20 +27,20 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x' # Use a vers�o do seu projeto
+        dotnet-version: '9.0.x' # Use a vers�o do seu projeto
 
     # --- CI: Continuous Integration ---
     # 3. Restaura as depend�ncias do projeto
     - name: Restore dependencies
-      run: dotnet restore ./backend/GeoLoc.sln # Ajuste o caminho
+      run: dotnet restore ./GeoLoc.sln # Ajuste o caminho
 
     # 4. Compila o projeto
     - name: Build
-      run: dotnet build ./backend/GeoLoc.sln --no-restore # Ajuste o caminho
+      run: dotnet build ./GeoLoc.sln --no-restore # Ajuste o caminho
 
     # 5. Roda os testes (se voc� tiver)
     - name: Test
-      run: dotnet test ./backend/GeoLoc.sln --no-build --verbosity normal # Ajuste o caminho
+      run: dotnet test ./GeoLoc.sln --no-build --verbosity normal # Ajuste o caminho
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
@@ -48,7 +48,7 @@ jobs:
     # --- CD: Continuous Deployment (s� roda na branch 'main') ---
     - name: Publish application
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: dotnet publish ./backend/GeoLoc.sln -c Release -o ./publish # Ajuste o caminho
+      run: dotnet publish ./GeoLoc.sln -c Release -o ./publish # Ajuste o caminho
 
     - name: Deploy to AWS EC2
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
