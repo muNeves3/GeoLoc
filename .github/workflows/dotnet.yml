@@ -1,23 +1,25 @@
 name: .NET Backend CI/CD
 
 # Gatilho: Roda quando houver push ou pull request na branch 'main'
-# e somente se houverem alterações na pasta 'backend/' (ajuste o nome da pasta)
+# e somente se houverem alteraï¿½ï¿½es na pasta 'backend/' (ajuste o nome da pasta)
 on:
   push:
     branches: [ "main" ]
     paths:
-      - 'backend/**'
+      - 'GeoLoc/**'  # <-- CORRETO! Aciona para qualquer mudanÃ§a dentro da pasta GeoLoc.
+      - '.github/workflows/dotnet.yml' # Opcional, mas bom: aciona se o prÃ³prio workflow for alterado.
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'backend/**'
+      - 'GeoLoc/**'  # <-- CORRETO! Aciona para qualquer mudanÃ§a dentro da pasta GeoLoc.
+      - '.github/workflows/dotnet.yml' # Opcional, mas bom: aciona se o prÃ³prio workflow for alterado.
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Faz o checkout do código do repositório
+    # 1. Faz o checkout do cï¿½digo do repositï¿½rio
     - name: Checkout code
       uses: actions/checkout@v4
 
@@ -25,10 +27,10 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x' # Use a versão do seu projeto
+        dotnet-version: '8.0.x' # Use a versï¿½o do seu projeto
 
     # --- CI: Continuous Integration ---
-    # 3. Restaura as dependências do projeto
+    # 3. Restaura as dependï¿½ncias do projeto
     - name: Restore dependencies
       run: dotnet restore ./backend/GeoLoc.sln # Ajuste o caminho
 
@@ -36,14 +38,14 @@ jobs:
     - name: Build
       run: dotnet build ./backend/GeoLoc.sln --no-restore # Ajuste o caminho
 
-    # 5. Roda os testes (se você tiver)
+    # 5. Roda os testes (se vocï¿½ tiver)
     - name: Test
       run: dotnet test ./backend/GeoLoc.sln --no-build --verbosity normal # Ajuste o caminho
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
-    # --- CD: Continuous Deployment (só roda na branch 'main') ---
+    # --- CD: Continuous Deployment (sï¿½ roda na branch 'main') ---
     - name: Publish application
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: dotnet publish ./backend/GeoLoc.sln -c Release -o ./publish # Ajuste o caminho
@@ -56,12 +58,12 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          # Copia os arquivos publicados para a instância EC2
-          # Este comando usa scp internamente, então a sintaxe é um pouco diferente
+          # Copia os arquivos publicados para a instï¿½ncia EC2
+          # Este comando usa scp internamente, entï¿½o a sintaxe ï¿½ um pouco diferente
           scp -r -i ${{ secrets.EC2_KEY }} ./publish/* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/geoloc-api
 
-          # Conecta via SSH para parar o serviço, mover os arquivos e reiniciar
-          # O ideal é ter seu app configurado como um serviço (systemd)
+          # Conecta via SSH para parar o serviï¿½o, mover os arquivos e reiniciar
+          # O ideal ï¿½ ter seu app configurado como um serviï¿½o (systemd)
           echo "Stopping service..."
           sudo systemctl stop geoloc-api.service
 
