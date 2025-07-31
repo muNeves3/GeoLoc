@@ -1,0 +1,75 @@
+name: .NET Backend CI/CD
+
+# Gatilho: Roda quando houver push ou pull request na branch 'main'
+# e somente se houverem alterações na pasta 'backend/' (ajuste o nome da pasta)
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Faz o checkout do código do repositório
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Configura o ambiente .NET
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Use a versão do seu projeto
+
+    # --- CI: Continuous Integration ---
+    # 3. Restaura as dependências do projeto
+    - name: Restore dependencies
+      run: dotnet restore ./backend/GeoLoc.sln # Ajuste o caminho
+
+    # 4. Compila o projeto
+    - name: Build
+      run: dotnet build ./backend/GeoLoc.sln --no-restore # Ajuste o caminho
+
+    # 5. Roda os testes (se você tiver)
+    - name: Test
+      run: dotnet test ./backend/GeoLoc.sln --no-build --verbosity normal # Ajuste o caminho
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+    # --- CD: Continuous Deployment (só roda na branch 'main') ---
+    - name: Publish application
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: dotnet publish ./backend/GeoLoc.sln -c Release -o ./publish # Ajuste o caminho
+
+    - name: Deploy to AWS EC2
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          # Copia os arquivos publicados para a instância EC2
+          # Este comando usa scp internamente, então a sintaxe é um pouco diferente
+          scp -r -i ${{ secrets.EC2_KEY }} ./publish/* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/geoloc-api
+
+          # Conecta via SSH para parar o serviço, mover os arquivos e reiniciar
+          # O ideal é ter seu app configurado como um serviço (systemd)
+          echo "Stopping service..."
+          sudo systemctl stop geoloc-api.service
+
+          echo "Moving files..."
+          sudo rm -rf /var/www/geoloc-api/*
+          sudo mv /home/${{ secrets.EC2_USERNAME }}/publish/* /var/www/geoloc-api/
+
+          echo "Starting service..."
+          sudo systemctl start geoloc-api.service
+
+          echo "Deployment finished!"
