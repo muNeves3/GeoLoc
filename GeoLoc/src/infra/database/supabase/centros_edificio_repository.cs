@@ -47,7 +47,7 @@ namespace GeoLoc.src.infra.database.supabase
             {
                 if (id_centro == null || id_edificio == null)
                 {
-                    throw new ArgumentException("IDs devem ser maiores que zero.");
+                    throw new ArgumentException("IDs devem ser válidos e não nulos.");
                 }
 
                 var queryExiste = _client.From<Centro_Edificio>()
@@ -75,7 +75,7 @@ namespace GeoLoc.src.infra.database.supabase
             {
                 if (id_edificio == null)
                 {
-                    throw new ArgumentException("ID do edifício deve ser maior que zero.");
+                    throw new ArgumentException("ID do edifícionão não pode ser nulo.");
                 }
 
                 var query = await _client.From<Centro_Edificio>()
@@ -97,7 +97,7 @@ namespace GeoLoc.src.infra.database.supabase
             {
                 if (id_centro == null)
                 {
-                    throw new ArgumentException("ID do centro deve ser maior que zero.");
+                    throw new ArgumentException("ID do centro não pode ser nulo.");
                 }
                 var query = await _client.From<Centro_Edificio>()
                     .Select("id_centro")
