@@ -3,7 +3,7 @@
 ![Status do Projeto](https://img.shields.io/badge/status-em_desenvolvimento-yellow)
 ![Licença](https://img.shields.io/badge/license-MIT-blue.svg)
 
-[cite_start]GeoLoc é um projeto de mapa interativo de código aberto, projetado para facilitar a localização e navegação no campus da Universidade Estadual de Londrina (UEL). [cite_start]A plataforma permite que usuários encontrem salas, centros de estudo e outros locais de interesse, além de traçar rotas partindo de sua localização atual.
+GeoLoc é um projeto de mapa interativo de código aberto, projetado para facilitar a localização e navegação no campus da Universidade Estadual de Londrina (UEL). A plataforma permite que usuários encontrem salas, centros de estudo e outros locais de interesse, além de traçar rotas partindo de sua localização atual.
 
 ---
 
@@ -20,22 +20,22 @@
 ---
 
 ### 🎯 Sobre o Projeto
-Navegar por um campus universitário grande como o da UEL pode ser um desafio, especialmente para novos estudantes e visitantes. [cite_start]O GeoLoc nasceu com o objetivo de resolver esse problema, oferecendo uma plataforma centralizada onde é possível visualizar o mapa do campus, filtrar locais por categorias e gerar rotas otimizadas para chegar ao destino desejado.
+Navegar por um campus universitário grande como o da UEL pode ser um desafio, especialmente para novos estudantes e visitantes. O GeoLoc nasceu com o objetivo de resolver esse problema, oferecendo uma plataforma centralizada onde é possível visualizar o mapa do campus, filtrar locais por categorias e gerar rotas otimizadas para chegar ao destino desejado.
 
-[cite_start]O projeto foi dividido em duas frentes principais: um painel para administradores gerenciarem os locais cadastrados e uma interface para o usuário final consultar o mapa.
+O projeto foi dividido em duas frentes principais: um painel para administradores gerenciarem os locais cadastrados e uma interface para o usuário final consultar o mapa.
 
 ### ✨ Funcionalidades
 
 #### 👤 Para Usuários
-* [cite_start]Visualização de todos os locais cadastrados no mapa do campus.
-* [cite_start]Filtro de locais por parâmetros como Centro de Estudo ou número da sala.
-* [cite_start]Criação de um caminho (rota) a partir da localização do usuário até uma sala ou local específico.
+* Visualização de todos os locais cadastrados no mapa do campus.
+* Filtro de locais por parâmetros como Centro de Estudo ou número da sala.
+* Criação de um caminho (rota) a partir da localização do usuário até uma sala ou local específico.
 
 #### 🛠️ Para Administradores
-* [cite_start]Autenticação segura para acesso a funcionalidades restritas.
-* [cite_start]Cadastro de novos lugares no mapa utilizando coordenadas geográficas.
-* [cite_start]Alteração de informações de locais já existentes.
-* [cite_start]Visualização geral do mapa com todos os pontos cadastrados.
+* Autenticação segura para acesso a funcionalidades restritas.
+* Cadastro de novos lugares no mapa utilizando coordenadas geográficas.
+* Alteração de informações de locais já existentes.
+* Visualização geral do mapa com todos os pontos cadastrados.
 
 #### 🗺️ Navegação e Cálculo de Rota
 A funcionalidade de criação de caminho é potencializada por um serviço externo para garantir precisão e eficiência. Para calcular a melhor rota a pé dentro do campus, o GeoLoc se integra com a API do **OpenRouteService**, um serviço de roteirização de código aberto mantido pelo **heiGIT** (Heidelberg Institute for Geoinformation Technology).
@@ -50,30 +50,30 @@ O fluxo funciona da seguinte maneira:
 Essa abordagem garante rotas precisas, aproveitando os dados do OpenStreetMap, sem a necessidade de manter uma complexa lógica de grafos no próprio backend.
 
 #### ⚙️ Funcionalidades Técnicas
-* [cite_start]**Arquitetura:** O projeto segue os princípios de Domain-Driven Design (DDD) e Clean Architecture para garantir um código desacoplado, testável e de fácil manutenção.
-* [cite_start]**Autenticação:** Diferenciação de permissões entre usuários comuns e administradores, com autenticação baseada em JWT (JSON Web Token).
-* [cite_start]**Performance:** Uso de estratégias de caching para otimizar o tempo de resposta das requisições.
-* [cite_start]**DevOps:** Planejamento para integração e entrega contínua (CI/CD) para automação de builds e deploys.
-* [cite_start]**Documentação:** A API do backend é documentada com Swagger para facilitar o entendimento e o consumo dos endpoints.
+* **Arquitetura:** O projeto segue os princípios de Domain-Driven Design (DDD) e Clean Architecture para garantir um código desacoplado, testável e de fácil manutenção.
+* **Autenticação:** Diferenciação de permissões entre usuários comuns e administradores, com autenticação baseada em JWT (JSON Web Token).
+* **Performance:** Uso de estratégias de caching para otimizar o tempo de resposta das requisições.
+* **DevOps:** Planejamento para integração e entrega contínua (CI/CD) para automação de builds e deploys.
+* **Documentação:** A API do backend é documentada com Swagger para facilitar o entendimento e o consumo dos endpoints.
 
 ### 🚀 Tecnologias Utilizadas
 A stack do projeto foi escolhida para ser moderna, robusta e escalável.
 
 * **Backend**
-    * [cite_start]C# & .NET Core 
-    * [cite_start]Supabase (Banco de Dados e Autenticação) 
+    * C# & .NET Core 
+    * Supabase (Banco de Dados e Autenticação) 
 * **Frontend**
-    * [cite_start]React 
-    * [cite_start]TypeScript 
-    * [cite_start]Leaflet ou React-google-maps para a renderização dos mapas [cite: 1, 2]
+    * React 
+    * TypeScript 
+    * Leaflet ou React-google-maps para a renderização dos mapas [cite: 1, 2]
 * **Serviços Externos / APIs**
     * OpenRouteService (do heiGIT) para cálculo de rotas e navegação.
 
 ### 🏛️ Arquitetura
-[cite_start]O backend do projeto foi estruturado seguindo os princípios da **Clean Architecture**, conforme definido nos requisitos não funcionais. Essa abordagem separa o software em camadas independentes:
+O backend do projeto foi estruturado seguindo os princípios da **Clean Architecture**, conforme definido nos requisitos não funcionais. Essa abordagem separa o software em camadas independentes:
 
 * **Domain (Domínio):** Contém a lógica de negócio principal e as entidades (Lugares, Usuários, etc.), completamente independente de tecnologias externas.
-* [cite_start]**Application (Aplicação):** Orquestra os casos de uso do sistema (Cadastrar Lugar, Criar Caminho), conectando o domínio à camada de infraestrutura.
+* **Application (Aplicação):** Orquestra os casos de uso do sistema (Cadastrar Lugar, Criar Caminho), conectando o domínio à camada de infraestrutura.
 * **Infrastructure (Infraestrutura):** Lida com detalhes externos como banco de dados (Supabase), frameworks web (.NET) e outras ferramentas.
 
 Essa estrutura promove um baixo acoplamento e alta coesão, facilitando testes, manutenção e a evolução do projeto.
