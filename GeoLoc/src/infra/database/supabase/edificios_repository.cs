@@ -51,5 +51,26 @@ namespace GeoLoc.src.infra.database.supabase
 
             }
         }
+
+        public async Task<List<IEdificioResponse>> GetAll()
+        {
+            try
+            {
+                var response = await _client.From<Edificio>().Get();
+                return response.Models.Select(e => new IEdificioResponse
+                {
+                    Id = e.Id,
+                    Nome = e.Nome,
+                    Descricao = e.Descricao,
+                    Latitude = e.Latitude,
+                    Longitude = e.Longitude,
+                    TipoLocal = e.TipoLocal
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error retrieving edificios from Supabase", ex);
+            }
+        }
     }
 }

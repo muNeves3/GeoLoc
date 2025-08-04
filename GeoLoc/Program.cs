@@ -1,17 +1,18 @@
 using DotNetEnv;
+using GeoLoc.src.app.repositories;
+using GeoLoc.src.app.use_cases;
+using GeoLoc.src.app.use_cases.centros;
+using GeoLoc.src.infra.database.supabase;
+using GeoLoc.src.infra.services;
 using Microsoft.AspNetCore.Builder; // Certifique-se de que esta using está presente
 using Microsoft.AspNetCore.Hosting; // Certifique-se de que esta using está presente
 using Microsoft.Extensions.DependencyInjection; // Certifique-se de que esta using está presente
 using Microsoft.Extensions.Hosting; // Certifique-se de que esta using está presente
-using System.IO; // Para Path.Combine, se necessário
-using System; // Para InvalidOperationException
+using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using Swashbuckle.AspNetCore.Swagger;
-using GeoLoc.src.app.use_cases;
-using GeoLoc.src.infra.database.supabase;
-using GeoLoc.src.app.repositories;
-using GeoLoc.src.app.use_cases.centros;
+using System; // Para InvalidOperationException
+using System.IO; // Para Path.Combine, se necessário
 
 public class Program
 {
@@ -60,18 +61,15 @@ public class Program
             AutoRefreshToken = true
         };
 
-        //builder.Services.AddSingleton(new Supabase.Client(supabaseUrl, supabaseAnonKey, options));
         builder.Services.AddScoped<Supabase.Client>(provider =>
         {
             var client = new Supabase.Client(supabaseUrl, supabaseAnonKey, options);
             return client;
         });
 
-        //builder.Services.AddScoped<IPerfilUsuarioRepository, perfil_usuario_repository>();
-        //builder.Services.AddScoped<create_perfil_usuario>();
-        //builder.Services.AddScoped<ICentroRepository, centro_repository>();
-        //builder.Services.AddScoped<create_centro>();
-        //builder.Services.AddScoped<get_all_centros>();
+        builder.Services.AddHttpClient();
+        builder.Services.AddScoped<INavegacaoService, navegacao_service>();
+
 
         builder.Services.Scan(scan => scan
             .FromAssemblyOf<Program>()

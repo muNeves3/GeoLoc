@@ -26,5 +26,19 @@ namespace GeoLoc.src.infra.http.controllers
                 return StatusCode(500, $"Erro ao criar edificio: {ex.Message}");
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromServices] get_all_edificios getAllEdificios)
+        {
+            try
+            {
+                var edificios = await getAllEdificios.execute();
+                return Ok(edificios);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao obter edificios: {ex.Message}");
+            }
+        }
     }
 }
