@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GeoLoc.src.app.use_cases.salas;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GeoLoc.src.infra.http.controllers
 {
@@ -22,6 +23,30 @@ namespace GeoLoc.src.infra.http.controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error creating sala: {ex.Message}");
+            }
+        }
+
+        [HttpGet("{edificioId}")]
+        public async Task<IActionResult> GetSalasEdificio(
+            string edificioId,
+            [FromServices] get_salas_edificio getSalasEdificio)
+        {
+            if (string.IsNullOrEmpty(edificioId))
+            {
+                return BadRequest("Edificio ID must be provided.");
+            }
+            try
+            {
+                var salas = await getSalasEdificio.execute(edificioId);
+                if (salas == null || !salas.Any())
+                {
+                    return NotFound("No salas found for the provided edificio ID.");
+                }
+                return Ok(salas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving salas: {ex.Message}");
             }
         }
     }

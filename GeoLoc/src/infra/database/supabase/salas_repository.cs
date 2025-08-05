@@ -61,13 +61,13 @@ namespace GeoLoc.src.infra.database.supabase
         }
         public async Task<List<ISalaResponse>> GetSalasEdificio(string idEdificio)
         {
-            if (idEdificio != null)
+            if (idEdificio == null)
             {
                 throw new ArgumentException("Edificio ID must be greater than zero.", nameof(idEdificio));
             }
            var salas = await _client
                 .From<Sala>()
-                .Where(s => s.IdEdificio.ToString() == idEdificio)
+                .Where(s => s.IdEdificio == new Guid(idEdificio))
                 .Get();
             if (salas.Models == null || !salas.Models.Any())
             {

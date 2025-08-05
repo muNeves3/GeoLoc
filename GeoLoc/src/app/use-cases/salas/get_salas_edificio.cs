@@ -11,7 +11,7 @@
 
         public async Task<List<GeoLoc.src.app.DTOs.ISalaResponse>> execute(string edificioId)
         {
-            if (edificioId != null)
+            if (edificioId == null)
             {
                 throw new ArgumentException("Edificio ID must be greater than zero.", nameof(edificioId));
             }
