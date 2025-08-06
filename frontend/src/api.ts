@@ -3,7 +3,7 @@ import type { Centro, Edificio, Sala } from './types';
 
 
 const apiClient = axios.create({
-  baseURL: 'https://localhost:8080', 
+  baseURL: '', 
 });
 
 export const fetchCentros = async (): Promise<Centro[]> => {
@@ -25,7 +25,7 @@ export const fetchSalasPorEdificio = async (edificioId: string): Promise<Sala[]>
 export const fetchRota = async (origemLat: number, origemLon: number, destinoId: string) => {
   console.log('Buscando rota de:', { origemLat, origemLon }, 'para sala com ID:', destinoId);
   
-  const response = await apiClient.get(`https://localhost:8080/api/rotas?origemLat=${origemLat}&origemLon=${origemLon}&destinoId=${destinoId}`);
+  const response = await apiClient.get(`/api/rotas?origemLat=${origemLat}&origemLon=${origemLon}&destinoId=${destinoId}`);
 
   return response.data
 };
