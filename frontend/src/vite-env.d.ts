@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+/// <reference types="vite/client" />
 export default {
     content: [
       "./index.html",
