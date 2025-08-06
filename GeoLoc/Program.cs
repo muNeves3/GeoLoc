@@ -129,8 +129,9 @@ public class Program
             });
         }
 
-        app.UseHttpsRedirection();
+       // app.UseHttpsRedirection();
         app.UseCors(myAllowSpecificOrigins);
+        app.UseAuthorization();
         app.UseRouting(); 
         app.MapControllers(); 
 
