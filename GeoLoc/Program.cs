@@ -18,6 +18,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Console.WriteLine("--- VERSÃO 2.0 - TESTE DE DEPLOY ---");
         Env.Load();
         Console.WriteLine("DotNetEnv.Env.Load() chamado.");
 
