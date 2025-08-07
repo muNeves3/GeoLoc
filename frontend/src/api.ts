@@ -3,7 +3,7 @@ import type { Centro, Edificio, Sala } from './types';
 
 
 const apiClient = axios.create({
-  baseURL: '', 
+  baseURL: 'http://3.215.150.200', 
 });
 
 export const fetchCentros = async (): Promise<Centro[]> => {

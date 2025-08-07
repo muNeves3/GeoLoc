@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { fetchCentros, fetchEdificios, fetchSalasPorEdificio, fetchRota } from './api';
 import type { Centro, Edificio, Sala } from './types';
 import MapComponent from './MapComponent';
-import type { LatLngExpression } from 'leaflet';
+import type { LatLngExpression, LatLng} from 'leaflet';
 
 function App() {
 
@@ -37,6 +37,14 @@ function App() {
     }
   }, [selectedEdificioId]);
   
+  const handleMapClick = (coords: LatLng) => {
+    // toFixed(6) limita as casas decimais para um formato limpo
+    setOrigemCoords({
+      lat: coords.lat.toFixed(6),
+      lon: coords.lng.toFixed(6),
+    });
+  };
+
   const selectedSala = useMemo(() => {
     return salas.find(s => s.id === selectedSalaId) || null;
   }, [salas, selectedSalaId]);
@@ -113,7 +121,7 @@ function App() {
       </div>
 
       <div className="flex-1 p-4">
-        <MapComponent edificios={edificios} selectedSala={selectedSala} rota={rota} />
+        <MapComponent edificios={edificios} selectedSala={selectedSala} rota={rota} onMapClick={handleMapClick} origemCoords={origemCoords}/>
       </div>
     </div>
   );
