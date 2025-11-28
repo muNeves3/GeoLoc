@@ -4,21 +4,21 @@ using GeoLoc.src.app.use_cases;
 using GeoLoc.src.app.use_cases.centros;
 using GeoLoc.src.infra.database.supabase;
 using GeoLoc.src.infra.services;
-using Microsoft.AspNetCore.Builder; // Certifique-se de que esta using está presente
-using Microsoft.AspNetCore.Hosting; // Certifique-se de que esta using está presente
-using Microsoft.Extensions.DependencyInjection; // Certifique-se de que esta using está presente
-using Microsoft.Extensions.Hosting; // Certifique-se de que esta using está presente
+using Microsoft.AspNetCore.Builder; // Certifique-se de que esta using estï¿½ presente
+using Microsoft.AspNetCore.Hosting; // Certifique-se de que esta using estï¿½ presente
+using Microsoft.Extensions.DependencyInjection; // Certifique-se de que esta using estï¿½ presente
+using Microsoft.Extensions.Hosting; // Certifique-se de que esta using estï¿½ presente
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using System; // Para InvalidOperationException
-using System.IO; // Para Path.Combine, se necessário
+using System.IO; // Para Path.Combine, se necessï¿½rio
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine("--- VERSÃO 2.0 - TESTE DE DEPLOY ---");
+        Console.WriteLine("--- VERSï¿½O 2.0 - TESTE DE DEPLOY ---");
         Env.Load();
         Console.WriteLine("DotNetEnv.Env.Load() chamado.");
 
@@ -36,7 +36,7 @@ public class Program
             {
                 Title = "GeoLoc API UEL",
                 Version = "v1",
-                Description = "API para mapeamento e localização no campus da UEL.",
+                Description = "API para mapeamento e localizaï¿½ï¿½o no campus da UEL.",
                 Contact = new Microsoft.OpenApi.Models.OpenApiContact
                 {
                     Name = "Murilo de Souza Neves",
@@ -53,9 +53,9 @@ public class Program
 
         if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseAnonKey))
         {
-            Console.WriteLine("ERRO CRÍTICO: Supabase URL ou Anon Key são nulos ou vazios.");
+            Console.WriteLine("ERRO CRï¿½TICO: Supabase URL ou Anon Key sï¿½o nulos ou vazios.");
 
-            throw new InvalidOperationException("Supabase URL ou Anon Key não configurados.");
+            throw new InvalidOperationException("Supabase URL ou Anon Key nï¿½o configurados.");
         }
 
         var options = new Supabase.SupabaseOptions
@@ -132,11 +132,15 @@ public class Program
             });
         }
 
-       // app.UseHttpsRedirection();
-        app.UseCors(myAllowSpecificOrigins);
+        // app.UseHttpsRedirection();
+        app.UseCors(x => x
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .SetIsOriginAllowed(origin => true) // allow any origin
+            .AllowCredentials());
         app.UseAuthorization();
-        app.UseRouting(); 
-        app.MapControllers(); 
+        app.UseRouting();
+        app.MapControllers();
 
         app.Run();
     }
