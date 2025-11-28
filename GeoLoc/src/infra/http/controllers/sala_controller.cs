@@ -26,7 +26,7 @@ namespace GeoLoc.src.infra.http.controllers
             }
         }
 
-        [HttpGet("api/sala/{edificioId}")]
+        [HttpGet("{edificioId}")]
         public async Task<IActionResult> GetSalasEdificio(
             string edificioId,
             [FromServices] get_salas_edificio getSalasEdificio)
