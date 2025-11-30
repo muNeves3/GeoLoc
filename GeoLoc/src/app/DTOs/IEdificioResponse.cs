@@ -7,6 +7,6 @@
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string TipoLocal { get; set; }
-        public string Id { get; set; }
+        public Guid Id { get; set; }
     }
 }

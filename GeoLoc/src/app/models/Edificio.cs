@@ -7,7 +7,7 @@ namespace GeoLoc.src.app.models
     public class Edificio : BaseModel
     {
         [PrimaryKey("id", false)]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         [Column("nome")]
         public string Nome { get; set; }
         [Column("descricao")]

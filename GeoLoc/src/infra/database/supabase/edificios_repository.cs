@@ -72,5 +72,35 @@ namespace GeoLoc.src.infra.database.supabase
                 throw new Exception("Error retrieving edificios from Supabase", ex);
             }
         }
+
+
+        public async Task<IEdificioResponse> GetByIdAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException("ID cannot be empty.", nameof(id));
+            }
+            // Corrigido: buscar sala pelo filtro de Id, pois .Get espera CancellationToken
+            var response = await _client
+                .From<Edificio>()
+                .Where(s => s.Id == id)
+                .Get();
+
+            if (response.Models == null || !response.Models.Any())
+            {
+                return null;
+            }
+            var edificio = response.Models.FirstOrDefault();
+            return new IEdificioResponse
+            {
+                Id = edificio.Id,
+                Nome = edificio.Nome,
+                Descricao = edificio.Descricao,
+                Latitude = edificio.Latitude,
+                Longitude = edificio.Longitude,
+                TipoLocal = edificio.TipoLocal
+            };
+
+        }
     }
 }

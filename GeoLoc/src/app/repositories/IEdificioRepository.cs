@@ -6,5 +6,6 @@ namespace GeoLoc.src.app.repositories
     {
         Task<IEdificioResponse> Create(IEdificioRequest edificio);
         Task<List<IEdificioResponse>> GetAll();
+        Task<IEdificioResponse> GetByIdAsync(Guid id);
     }
 }

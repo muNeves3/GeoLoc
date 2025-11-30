@@ -40,7 +40,9 @@ namespace GeoLoc.src.infra.http.controllers
                 var salas = await getSalasEdificio.execute(edificioId);
                 if (salas == null || !salas.Any())
                 {
-                    return NotFound("No salas found for the provided edificio ID.");
+                    Console.WriteLine("No salas found for the provided edificio ID.");
+                    salas = new List<GeoLoc.src.app.DTOs.ISalaResponse>();
+                    return Ok(salas);
                 }
                 return Ok(salas);
             }

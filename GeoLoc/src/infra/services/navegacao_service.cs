@@ -8,24 +8,40 @@ namespace GeoLoc.src.infra.services
         private readonly ISalaRepository _salaRepository; // Supondo que você tenha um repositório para salas
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly IEdificioRepository _edificioRepository;
 
-        public navegacao_service(ISalaRepository salaRepository, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public navegacao_service(ISalaRepository salaRepository, IHttpClientFactory httpClientFactory, IConfiguration configuration, IEdificioRepository edificioRepository)
         {
             _salaRepository = salaRepository;
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _edificioRepository = edificioRepository;
         }
 
         public async Task<List<List<double>>> CalcularRota(double origemLat, double origemLon, Guid destinoId)
         {
             // 1. Buscar as coordenadas do destino no seu banco de dados
             var salaDestino = await _salaRepository.GetByIdAsync(destinoId);
+            var edificioDestino = await _edificioRepository.GetByIdAsync(destinoId);
+
+            if (salaDestino == null && edificioDestino == null)
+            {
+                throw new Exception("Sala ou Edifício de destino não encontrado.");
+            }
+
+            double destinoLat;
+            double destinoLon;
+
             if (salaDestino == null)
             {
-                throw new Exception("Sala de destino não encontrada.");
+                destinoLat = edificioDestino.Latitude;
+                destinoLon = edificioDestino.Longitude;
             }
-            var destinoLat = salaDestino.Latitude;
-            var destinoLon = salaDestino.Longitude;
+            else
+            {
+                destinoLat = salaDestino.Latitude;
+                destinoLon = salaDestino.Longitude;
+            }
 
             // 2. Montar e fazer a chamada para a API do OpenRouteService
             var apiKey = _configuration["ORS_API_KEY"]; // Pega a chave das variáveis de ambiente
