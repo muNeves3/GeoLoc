@@ -32,3 +32,9 @@ export interface Rota {
   destination: { latitude: number; longitude: number };
   path: { latitude: number; longitude: number }[];
 }
+
+export interface RotasRecentes {
+  id: string;
+  origem: string;
+  destino: string;
+}

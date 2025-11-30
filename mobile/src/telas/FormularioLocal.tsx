@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -14,15 +14,20 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { useRouteContext } from '../RouteContext';
 import { fetchCentros, fetchEdificios, fetchSalasPorEdificio, fetchRota } from '../api';
-import { Centro, Edificio, Sala } from '../types';
+import { Centro, Edificio, RotasRecentes, Sala } from '../types';
 import * as Location from 'expo-location';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FormularioLocal() {
     const navigation = useNavigation<any>();
-    const { setCurrentRoute } = useRouteContext();
+    
+    // Pegamos as funções do contexto para salvar o histórico e a rota atual
+    const { setRotasRecentes, rotasRecentes, setCurrentRoute } = useRouteContext();
 
     const [locExpo, setLocExpo] = useState<Location.LocationObject>();
     const [loading, setLoading] = useState(false);
+    const [gpsLoading, setGpsLoading] = useState(false);
+    
     const [centros, setCentros] = useState<Centro[]>([]);
     const [edificios, setEdificios] = useState<Edificio[]>([]);
     const [salas, setSalas] = useState<Sala[]>([]);
@@ -38,10 +43,6 @@ export default function FormularioLocal() {
             try {
                 const c = await fetchCentros();
                 const e = await fetchEdificios();
-
-                console.log("Centros carregados:", c);
-                console.log("Edifícios carregados:", e);
-
                 setCentros(c);
                 setEdificios(e);
             } catch (error) {
@@ -53,18 +54,12 @@ export default function FormularioLocal() {
 
     useEffect(() => {
         (async () => {
-          // Request permission to access location
           let { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') {
-            console.warn('Permission to access location was denied');
-            return;
-          }
-    
-          // Get the current position
+          if (status !== 'granted') return;
           let currentLocation = await Location.getCurrentPositionAsync({});
           setLocExpo(currentLocation);
         })();
-      }, []);
+    }, []);
 
     useEffect(() => {
         if (selectedEdificioId) {
@@ -82,88 +77,93 @@ export default function FormularioLocal() {
         }
     }, [selectedEdificioId]);
 
+    const handleGetLocation = async () => {
+        setGpsLoading(true);
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permissão negada', 'Precisamos de acesso ao GPS.');
+                return;
+            }
+            const location = await Location.getCurrentPositionAsync({});
+            setLocExpo(location);
+            setOrigemCoords({
+                lat: location.coords.latitude.toString(),
+                lon: location.coords.longitude.toString()
+            });
+        } catch (error) {
+            Alert.alert('Erro', 'Não foi possível obter sua localização.');
+        } finally {
+            setGpsLoading(false);
+        }
+    };
+
+    const processarRota = (rotaBruta: number[][], latOrigem: number, lonOrigem: number) => {
+        const pathFormatado = rotaBruta.map((ponto) => ({
+            latitude: ponto[1],  // Índice 1 é LATITUDE
+            longitude: ponto[0]  // Índice 0 é LONGITUDE
+        }));
+
+        const salaDestino = salas.find(s => s.id === selectedSalaId);
+        const edificioDestino = edificios.find(e => e.id === selectedEdificioId);
+
+        const nomeDestino = salaDestino ? `${salaDestino.numero} - ${salaDestino.nome}` : edificioDestino ? edificioDestino.nome : 'Destino';
+        console.log('Nome do Destino:', nomeDestino);
+        const novaRota = {
+            id: Math.random().toString(),
+            name: `Rota para ${nomeDestino}`,
+            origin: {
+                latitude: latOrigem,
+                longitude: lonOrigem
+            },
+            destination: pathFormatado[pathFormatado.length - 1],
+            path: pathFormatado
+        };
+
+        const novaRotaRecente: RotasRecentes = {
+            id: novaRota.id,
+            origem: `(${latOrigem.toFixed(4)}, ${lonOrigem.toFixed(4)})`,
+            destino: nomeDestino,
+        };
+
+        const novasRotasRecentes = [novaRotaRecente, ...rotasRecentes];
+        setRotasRecentes(novasRotasRecentes);
+        setCurrentRoute(novaRota);
+        navigation.navigate('Mapa');
+    };
+
     const handleCriarRota = async () => {
-        if (!origemCoords.lat || !origemCoords.lon || !selectedSalaId) {
-            Alert.alert('Campos Incompletos', 'Por favor, preencha a latitude, longitude e selecione uma sala de destino.');
+        if (!origemCoords.lat || !origemCoords.lon) {
+            Alert.alert('Campos Incompletos', 'Preencha todos os campos.');
             return;
         }
 
         try {
             setLoading(true);
+            const lat = parseFloat(origemCoords.lat);
+            const lon = parseFloat(origemCoords.lon);
+            console.log('Criando rota de:', { lat, lon }, 'para edifício ID:', selectedEdificioId, 'e sala ID:', selectedSalaId);
+            let rotaBruta : any;
+            if(selectedSalaId !== '') {
+                rotaBruta = await fetchRota(lat, lon, selectedSalaId);
+            } else {
+                if(selectedSalaId === '') {
+                    rotaBruta = await fetchRota(lat, lon, selectedEdificioId);
+                } else if(selectedEdificioId === '') {
+                    Alert.alert('Atenção', 'Selecione um edifício de destino.');
+                    return;
+                }
+            }
 
-            const rotaBruta = await fetchRota(
-                parseFloat(origemCoords.lat),
-                parseFloat(origemCoords.lon),
-                selectedSalaId
-            ) as number[][];
 
             if (rotaBruta && rotaBruta.length > 0) {
-                const pathFormatado = rotaBruta.map((ponto) => ({
-                    latitude: ponto[0],
-                    longitude: ponto[1]
-                }));
-
-                const salaDestino = salas.find(s => s.id === selectedSalaId);
-
-                const novaRota = {
-                    id: Math.random().toString(),
-                    name: `Rota para ${salaDestino?.nome || 'Destino'}`,
-                    origin: {
-                        latitude: parseFloat(origemCoords.lat),
-                        longitude: parseFloat(origemCoords.lon)
-                    },
-                    destination: pathFormatado[pathFormatado.length - 1], // Último ponto é o destino
-                    path: pathFormatado
-                };
-                setCurrentRoute(novaRota);
-                navigation.navigate('Mapa');
+                processarRota(rotaBruta, lat, lon);
             } else {
-                Alert.alert('Erro', 'Não foi possível encontrar uma rota para o destino selecionado.');
+                Alert.alert('Erro', 'Rota não encontrada.');
             }
         } catch (error) {
             console.error(error);
-            Alert.alert('Erro de Conexão', 'Falha ao buscar a rota. Verifique sua conexão.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCriarRotaLocAtual = async () => {
-        try {
-            setLoading(true);
-
-            const rotaBruta = await fetchRota(
-                parseFloat(locExpo?.coords.latitude?.toString() || '0'),
-                parseFloat(locExpo?.coords.longitude?.toString() || '0'),
-                selectedSalaId
-            ) as number[][];
-
-            if (rotaBruta && rotaBruta.length > 0) {
-                const pathFormatado = rotaBruta.map((ponto) => ({
-                    latitude: ponto[1],
-                    longitude: ponto[0]
-                }));
-
-                const salaDestino = salas.find(s => s.id === selectedSalaId);
-
-                const novaRota = {
-                    id: Math.random().toString(),
-                    name: `Rota para ${salaDestino?.nome || 'Destino'}`,
-                    origin: {
-                        latitude: parseFloat(locExpo?.coords.latitude?.toString() || '0'),
-                        longitude:  parseFloat(locExpo?.coords.longitude?.toString() || '0')
-                    },
-                    destination: pathFormatado[pathFormatado.length - 1], // Último ponto é o destino
-                    path: pathFormatado
-                };
-                setCurrentRoute(novaRota);
-                navigation.navigate('Mapa');
-            } else {
-                Alert.alert('Erro', 'Não foi possível encontrar uma rota para o destino selecionado.');
-            }
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Erro de Conexão', 'Falha ao buscar a rota. Verifique sua conexão.');
+            Alert.alert('Erro', 'Falha ao buscar a rota.');
         } finally {
             setLoading(false);
         }
@@ -172,14 +172,23 @@ export default function FormularioLocal() {
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.header}>
-                    <Text style={styles.title}>Planejador de Rotas</Text>
-                    <Text style={styles.subtitle}>Encontre seu caminho no campus</Text>
+
+                <View style={styles.headerRow}>
+                    <View>
+                        <Text style={styles.title}>Planejador</Text>
+                        <Text style={styles.subtitle}>Encontre seu caminho</Text>
+                    </View>
+                    <TouchableOpacity 
+                        style={styles.historyButton}
+                        onPress={() => navigation.navigate('RotasRecentes')}
+                    >
+                        <Ionicons name="time-outline" size={24} color="#2563eb" />
+                    </TouchableOpacity>
                 </View>
 
+                {/* Card de Seleção de Destino */}
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Destino</Text>
-                    
                     <Text style={styles.label}>Centro</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
@@ -220,7 +229,7 @@ export default function FormularioLocal() {
                             style={styles.picker}
                         >
                             <Picker.Item label="Selecione uma Sala" value="" color="#9ca3af"/>
-                            {salas.map(s => (
+                            {salas && salas.map(s => (
                                 <Picker.Item key={s.id} label={`${s.numero} - ${s.nome}`} value={s.id} />
                             ))}
                         </Picker>
@@ -229,7 +238,23 @@ export default function FormularioLocal() {
 
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Local de saída</Text>
-                    <Text style={styles.helperText}>Insira coordenadas manuais para teste.</Text>
+                    
+                    <TouchableOpacity 
+                        style={styles.gpsButton} 
+                        onPress={handleGetLocation}
+                        disabled={gpsLoading}
+                    >
+                        {gpsLoading ? (
+                            <ActivityIndicator size="small" color="#2563eb" />
+                        ) : (
+                            <>
+                                <Ionicons name="location" size={20} color="#2563eb" style={{ marginRight: 8 }} />
+                                <Text style={styles.gpsButtonText}>Usar Localização Atual</Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+
+                    <Text style={styles.helperText}>Ou insira manualmente:</Text>
                     
                     <View style={styles.row}>
                         <View style={styles.inputGroup}>
@@ -255,31 +280,14 @@ export default function FormularioLocal() {
                     </View>
                 </View>
 
-                {/* Botão de Ação */}
+                {/* Botões de Ação */}
                 <TouchableOpacity
                     style={styles.button}
                     onPress={handleCriarRota}
                     disabled={loading}
                 >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Gerar Rota</Text>
-                    )}
+                    {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Gerar Rota</Text>}
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleCriarRotaLocAtual}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Gerar rota com minha localização atual</Text>
-                    )}
-                </TouchableOpacity>
-
                 <View style={styles.footerSpace} />
             </ScrollView>
         </SafeAreaView>
@@ -287,113 +295,93 @@ export default function FormularioLocal() {
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#f3f4f6',
+    safeArea: { flex: 1, backgroundColor: '#f3f4f6' },
+    scrollContainer: { padding: 20 },
+    headerRow: { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 24, 
+        marginTop: 10 
     },
-    scrollContainer: {
-        padding: 20,
+    title: { fontSize: 28, fontWeight: 'bold', color: '#1e293b' },
+    subtitle: { fontSize: 16, color: '#64748b', marginTop: 4 },
+    historyButton: { 
+        backgroundColor: '#fff', 
+        padding: 10, 
+        borderRadius: 50, 
+        shadowColor: "#000", 
+        shadowOffset: { width: 0, height: 2 }, 
+        shadowOpacity: 0.1, 
+        elevation: 3 
     },
-    header: {
-        marginBottom: 24,
-        marginTop: 10,
+    card: { 
+        backgroundColor: '#fff', 
+        borderRadius: 12, 
+        padding: 16, 
+        marginBottom: 20, 
+        shadowColor: "#000", 
+        shadowOffset: { width: 0, height: 2 }, 
+        shadowOpacity: 0.1, 
+        elevation: 3 
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#1e293b',
+    cardTitle: { 
+        fontSize: 18, 
+        fontWeight: '600', 
+        color: '#334155', 
+        marginBottom: 16, 
+        borderBottomWidth: 1, 
+        borderBottomColor: '#f1f5f9', 
+        paddingBottom: 8 
     },
-    subtitle: {
-        fontSize: 16,
-        color: '#64748b',
-        marginTop: 4,
+    label: { fontSize: 14, fontWeight: '500', color: '#475569', marginBottom: 8, marginTop: 4 },
+    pickerContainer: { 
+        borderWidth: 1, 
+        borderColor: '#e2e8f0', 
+        borderRadius: 8, 
+        marginBottom: 16, 
+        backgroundColor: '#f8fafc', 
+        height: 50, 
+        justifyContent: 'center' 
     },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 20,
-        // Sombra
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 3,
+    disabledPicker: { backgroundColor: '#e2e8f0', borderColor: '#cbd5e1', opacity: 0.6 },
+    picker: { width: '100%' },
+    helperText: { fontSize: 13, color: '#94a3b8', marginBottom: 12, marginTop: 8 },
+    row: { flexDirection: 'row', justifyContent: 'space-between' },
+    inputGroup: { width: '48%' },
+    input: { 
+        height: 50, 
+        backgroundColor: '#f8fafc', 
+        borderWidth: 1, 
+        borderColor: '#e2e8f0', 
+        borderRadius: 8, 
+        paddingHorizontal: 12, 
+        fontSize: 16, 
+        color: '#334155' 
     },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#334155',
-        marginBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
-        paddingBottom: 8,
+    gpsButton: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        backgroundColor: '#eff6ff', 
+        borderColor: '#bfdbfe', 
+        borderWidth: 1, 
+        borderRadius: 8, 
+        padding: 12, 
+        marginBottom: 8 
     },
-    label: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#475569',
-        marginBottom: 8,
-        marginTop: 4,
+    gpsButtonText: { color: '#2563eb', fontWeight: '600', fontSize: 14 },
+    button: { 
+        backgroundColor: '#2563eb', 
+        height: 56, 
+        borderRadius: 12, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        shadowColor: "#2563eb", 
+        shadowOffset: { width: 0, height: 4 }, 
+        shadowOpacity: 0.3, 
+        elevation: 8 
     },
-    pickerContainer: {
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        borderRadius: 8,
-        marginBottom: 16,
-        backgroundColor: '#f8fafc',
-        height: 50,
-        justifyContent: 'center',
-    },
-    disabledPicker: {
-        backgroundColor: '#e2e8f0',
-        borderColor: '#cbd5e1',
-        opacity: 0.6,
-    },
-    picker: {
-        width: '100%',
-    },
-    helperText: {
-        fontSize: 13,
-        color: '#94a3b8',
-        marginBottom: 12,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    inputGroup: {
-        width: '48%',
-    },
-    input: {
-        height: 50,
-        backgroundColor: '#f8fafc',
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        fontSize: 16,
-        color: '#334155',
-    },
-    button: {
-        backgroundColor: '#2563eb',
-        height: 56,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#2563eb",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
-        elevation: 8,
-        marginTop: 4
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    footerSpace: {
-        height: 40,
-    }
+    buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+    footerSpace: { height: 40 }
 });
