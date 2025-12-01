@@ -44,7 +44,6 @@ export default function TelaRotasRecentes() {
               <Text style={styles.routeTitle}>Para: {item.destino}</Text>
               <Text style={styles.routeSubtitle}>De: {item.origem}</Text>
             </View>
-            {/* <Ionicons name="chevron-forward" size={20} color="#94a3b8" /> */}
           </TouchableOpacity>
         )}
       />

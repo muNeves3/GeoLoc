@@ -20,8 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function FormularioLocal() {
     const navigation = useNavigation<any>();
-    
-    // Pegamos as funções do contexto para salvar o histórico e a rota atual
+
     const { setRotasRecentes, rotasRecentes, setCurrentRoute } = useRouteContext();
 
     const [locExpo, setLocExpo] = useState<Location.LocationObject>();
@@ -155,7 +154,6 @@ export default function FormularioLocal() {
                 }
             }
 
-
             if (rotaBruta && rotaBruta.length > 0) {
                 processarRota(rotaBruta, lat, lon);
             } else {
@@ -186,7 +184,6 @@ export default function FormularioLocal() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Card de Seleção de Destino */}
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Destino</Text>
                     <Text style={styles.label}>Centro</Text>
@@ -280,7 +277,6 @@ export default function FormularioLocal() {
                     </View>
                 </View>
 
-                {/* Botões de Ação */}
                 <TouchableOpacity
                     style={styles.button}
                     onPress={handleCriarRota}

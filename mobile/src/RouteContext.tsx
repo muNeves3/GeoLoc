@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Rota, RotasRecentes } from './types'; // Importando a interface Rota definida no seu types.ts
+import { Rota, RotasRecentes } from './types';
 
 interface RouteContextType {
   currentRoute: Rota | undefined;

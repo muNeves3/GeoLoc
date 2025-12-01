@@ -41,16 +41,15 @@ export default function MapaRota() {
                         {currentRoute.path && (
                             <Polyline
                                 coordinates={currentRoute.path}
-                                strokeColor="#2563eb" // Azul primário combinando com o form
+                                strokeColor="#2563eb" 
                                 strokeWidth={5}
-                                lineDashPattern={[1]} // Linha sólida
+                                lineDashPattern={[1]} 
                             />
                         )}
                     </>
                 )}
             </MapView>
 
-            {/* Overlay de Informação da Rota */}
             {currentRoute && (
                 <View style={styles.infoBox}>
                     <Text style={styles.infoTitle}>Rota Ativa</Text>
