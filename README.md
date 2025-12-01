@@ -93,8 +93,7 @@ Para executar o projeto localmente, siga os passos abaixo.
 git clone [https://github.com/muNeves3/GeoLoc.git](https://github.com/muNeves3/GeoLoc.git)
 
 # 2. Navegue para a pasta do backend
-# (substitua pelo nome real da pasta)
-cd GeoLoc/backend-folder-name 
+cd GeoLoc/backend
 
 # 3. Configure suas variáveis de ambiente (ex: em um arquivo .env)
 # SUPABASE_URL=URL_DO_SEU_PROJETO
